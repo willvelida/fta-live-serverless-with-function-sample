@@ -22,7 +22,7 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
     
     - name: Publish Functions
-      run: dotnet publish --configuration Release --output ${{ env.OUTPUT_PATH }}
+      run: dotnet publish ./src./WeatherStation/WeatherStation.csproj --configuration Release --output ${{ env.OUTPUT_PATH }}
       
     - name: Package Functions
       uses: actions/upload-artifact@v1
