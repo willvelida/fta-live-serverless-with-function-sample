@@ -132,6 +132,17 @@ resource eventHub 'Microsoft.EventHub/namespaces/eventhubs@2021-11-01' = {
   }
 }
 
+resource eventHubAuthPolicy 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules@2021-11-01' = {
+  name: 'ListenSend'
+  parent: eventHub
+  properties: {
+    rights: [
+      'Listen'
+      'Send'
+    ]
+  }
+}
+
 resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   name: functionAppName
   location: location
@@ -163,6 +174,22 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
           value: '~4'
+        }
+        {
+          name: 'CosmosDbConnectionString'
+          value: cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
+        }
+        {
+          name: 'DatabaseName'
+          value: cosmosDb.name
+        }
+        {
+          name: 'ContainerName'
+          value: cosmosContainer.name
+        }
+        {
+          name: 'EventHubConnectionString'
+          value: eventHubAuthPolicy.listKeys().primaryConnectionString
         }
       ]
     }
