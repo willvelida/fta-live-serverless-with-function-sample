@@ -18,6 +18,7 @@ var cosmosThroughput = 400
 var functionAppName = '${applicationName}-fa'
 var functionRuntime = 'dotnet'
 var eventGridTopicName = '${applicationName}eg'
+var eventGridSubscriptionName = '${applicationName}sub'
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: storageAccountName
@@ -147,6 +148,19 @@ resource eventHubAuthPolicy 'Microsoft.EventHub/namespaces/eventhubs/authorizati
 resource eventGridTopic 'Microsoft.EventGrid/topics@2021-12-01' = {
   name: eventGridTopicName
   location: location
+}
+
+resource eventGridSubscription 'Microsoft.EventGrid/eventSubscriptions@2021-12-01' = {
+  name: eventGridSubscriptionName
+  scope: eventGridTopic
+  properties: {
+    destination: {
+      endpointType: 'AzureFunction'
+      properties: {
+        resourceId: functionApp.id
+      }
+    }
+  }
 }
 
 resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
