@@ -1,4 +1,4 @@
-name: Build and Deploy SubWatch.API
+name: Build and Deploy Function App
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'
   DOTNET_VERSION: 6.0.x
@@ -6,8 +6,9 @@ env:
   
 on:
   push:
-    branches: [ main ]
-    paths-ignore: './deploy/*'
+    paths:
+      - 'src/*'
+  workflow_dispatch:
 
 jobs:
   build:
