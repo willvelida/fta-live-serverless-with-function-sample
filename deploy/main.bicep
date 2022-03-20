@@ -36,11 +36,11 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
     name: 'default'
 
     resource blobTriggerContainer 'containers' = {
-      name: 'blobTriggerContainer'
+      name: 'blobtriggercontainer'
     }
 
     resource eventGridTriggerContainer 'containers' = {
-      name: 'eventGridTriggerContainer'
+      name: 'eventgridtriggercontainer'
     }
   }
 }
