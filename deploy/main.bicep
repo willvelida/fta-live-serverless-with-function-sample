@@ -31,6 +31,18 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
     supportsHttpsTrafficOnly: true
     accessTier: 'Hot'
   }
+
+  resource blobServices 'blobServices' = {
+    name: 'default'
+
+    resource blobTriggerContainer 'containers' = {
+      name: '$blobTriggerContainer'
+    }
+
+    resource eventGridTriggerContainer 'containers' = {
+      name: '$eventGridTriggerContainer'
+    }
+  }
 }
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
