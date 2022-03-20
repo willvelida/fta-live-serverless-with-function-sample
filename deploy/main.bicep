@@ -8,6 +8,7 @@ param applicationName string = uniqueString(resourceGroup().id)
 param storageSku string = 'Standard_LRS'
 
 var storageAccountName = 'fnstor${replace(applicationName, '-', '')}'
+var blobStorageAccountName = 'stor${replace(applicationName, '-','')}'
 var appInsightsName = '${applicationName}-ai'
 var appServicePlanName = '${applicationName}-asp'
 var eventhubName = 'eh${applicationName}'
@@ -21,6 +22,19 @@ var eventGridTopicName = '${applicationName}eg'
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: storageAccountName
+  location: location
+  sku: {
+    name: storageSku
+  }
+  kind: 'StorageV2'
+  properties: {
+    supportsHttpsTrafficOnly: true
+    accessTier: 'Hot'
+  } 
+}
+
+resource blobStorgage 'Microsoft.Storage/storageAccounts@2021-08-01' = {
+  name: blobStorageAccountName
   location: location
   sku: {
     name: storageSku
