@@ -162,19 +162,6 @@ resource eventGridTopic 'Microsoft.EventGrid/topics@2021-12-01' = {
   location: location
 }
 
-resource eventGridSubscription 'Microsoft.EventGrid/eventSubscriptions@2021-12-01' = {
-  name: eventGridSubscriptionName
-  scope: eventGridTopic
-  properties: {
-    destination: {
-      endpointType: 'AzureFunction'
-      properties: {
-        resourceId: functionApp.id
-      }
-    }
-  }
-}
-
 resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   name: functionAppName
   location: location
