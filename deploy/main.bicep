@@ -223,6 +223,10 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
           name: 'EventHubConnectionString'
           value: eventHubAuthPolicy.listKeys().primaryConnectionString
         }
+        {
+          name: 'BlobTriggerStorageConnection'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${blobStorgage.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(blobStorgage.id, blobStorgage.apiVersion).keys[0].value}'
+        }
       ]
     }
     httpsOnly: true
