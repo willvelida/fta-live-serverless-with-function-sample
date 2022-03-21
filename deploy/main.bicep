@@ -18,7 +18,7 @@ var cosmosContainerName = 'Readings'
 var cosmosThroughput = 400
 var functionAppName = '${applicationName}-fa'
 var functionRuntime = 'dotnet'
-var keyVaultName = '${applicationName}kv'
+var keyVaultName = 'kv${applicationName}'
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: storageAccountName
