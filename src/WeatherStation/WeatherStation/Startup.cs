@@ -1,14 +1,10 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using Azure.Identity;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WeatherStation;
 using WeatherStation.Helpers;
 using WeatherStation.Helpers.Interfaces;
@@ -27,7 +23,7 @@ namespace WeatherStation
                 .Build();
 
             builder.Services.AddLogging();
-            
+
             builder.Services.AddSingleton<IConfiguration>(config);
 
             builder.Services.AddSingleton(sp =>
@@ -38,7 +34,7 @@ namespace WeatherStation
                     MaxRetryAttemptsOnRateLimitedRequests = 3,
                     MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(60)
                 };
-                return new CosmosClient(configuration["CosmosDbConnectionString"], cosmosClientOptions);
+                return new CosmosClient(configuration["CosmosEndpoint"], new DefaultAzureCredential(), cosmosClientOptions);
             });
 
             builder.Services.AddTransient<IWeatherRepository, WeatherRepository>();
