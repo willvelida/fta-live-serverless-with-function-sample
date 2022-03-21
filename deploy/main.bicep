@@ -19,7 +19,7 @@ var cosmosThroughput = 400
 var functionAppName = '${applicationName}-fa'
 var functionRuntime = 'dotnet'
 var keyVaultName = 'kv${applicationName}'
-var cosmosDbContributorRole = '5bd9cd88-fe45-4216-938b-f97437e15450'
+var cosmosDbContributorRole = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '5bd9cd88-fe45-4216-938b-f97437e15450')
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: storageAccountName
