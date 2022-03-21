@@ -19,7 +19,7 @@ var cosmosThroughput = 400
 var functionAppName = '${applicationName}-fa'
 var functionRuntime = 'dotnet'
 var keyVaultName = 'kv${applicationName}'
-var cosmosDbContributorRole = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '5bd9cd88-fe45-4216-938b-f97437e15450')
+var cosmosDbReaderRole = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'fbdf93bf-df7d-467e-a4d2-9458aa1360c8')
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: storageAccountName
@@ -285,11 +285,11 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
 }
 
 resource functionCosmosDbContributorRole 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
-  name: guid(cosmosAccount.id, functionApp.id, cosmosDbContributorRole)
+  name: guid(cosmosAccount.id, functionApp.id, cosmosDbReaderRole)
   scope: cosmosAccount
   properties: {
     principalId: functionApp.identity.principalId
-    roleDefinitionId: cosmosDbContributorRole
+    roleDefinitionId: cosmosDbReaderRole
     principalType: 'ServicePrincipal'
   }
 }
