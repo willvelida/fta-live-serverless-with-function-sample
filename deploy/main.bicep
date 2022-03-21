@@ -18,7 +18,7 @@ var cosmosContainerName = 'Readings'
 var cosmosThroughput = 400
 var functionAppName = '${applicationName}-fa'
 var functionRuntime = 'dotnet'
-var eventGridTopicName = '${applicationName}eg'
+var keyVaultName = '${applicationName}kv'
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: storageAccountName
@@ -170,9 +170,28 @@ resource eventHubAuthPolicy 'Microsoft.EventHub/namespaces/eventhubs/authorizati
   }
 }
 
-resource eventGridTopic 'Microsoft.EventGrid/topics@2021-12-01' = {
-  name: eventGridTopicName
+resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
+  name: keyVaultName
   location: location
+  properties: {
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }
+    tenantId: subscription().tenantId
+    accessPolicies: [
+      {
+        objectId: functionApp.identity.principalId
+        tenantId: functionApp.identity.tenantId
+        permissions: {
+          secrets: [
+            'list'
+            'get'
+          ]
+        }
+      }
+    ]
+  }
 }
 
 resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
