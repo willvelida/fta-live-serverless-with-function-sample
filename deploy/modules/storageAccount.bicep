@@ -1,7 +1,6 @@
 param storageAccountName string
 param location string
 param storageSku string
-param deployContainers bool
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: storageAccountName
