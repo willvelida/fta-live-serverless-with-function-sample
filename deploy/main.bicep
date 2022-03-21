@@ -7,8 +7,16 @@ param applicationName string = uniqueString(resourceGroup().id)
 @description('The SKU for the storage account')
 param storageSku string = 'Standard_LRS'
 
+@description('Friendly name for the SQL Role Definition')
+param roleDefinitionName string = 'Function Read Write Role'
+
+@description('Data actions required by the Role defintiion')
+param dataActions array = [
+  'Microsoft.DocumentDB/databaseAccounts/readMetadata'
+  'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/*'
+]
+
 var storageAccountName = 'fnstor${replace(applicationName, '-', '')}'
-var blobStorageAccountName = 'stor${replace(applicationName, '-','')}'
 var appInsightsName = '${applicationName}-ai'
 var appServicePlanName = '${applicationName}-asp'
 var eventhubName = 'eh${applicationName}'
@@ -17,279 +25,85 @@ var cosmosDbName = 'ReadingsDB'
 var cosmosContainerName = 'Readings'
 var cosmosThroughput = 400
 var functionAppName = '${applicationName}-fa'
-var functionRuntime = 'dotnet'
 var keyVaultName = 'kv${applicationName}'
-var cosmosDbContributorRole = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
-  name: storageAccountName
-  location: location
-  sku: {
-    name: storageSku
-  }
-  kind: 'StorageV2'
-  properties: {
-    supportsHttpsTrafficOnly: true
-    accessTier: 'Hot'
-  } 
-}
-
-resource blobStorgage 'Microsoft.Storage/storageAccounts@2021-08-01' = {
-  name: blobStorageAccountName
-  location: location
-  sku: {
-    name: storageSku
-  }
-  kind: 'StorageV2'
-  properties: {
-    supportsHttpsTrafficOnly: true
-    accessTier: 'Hot'
-  }
-
-  resource blobServices 'blobServices' = {
-    name: 'default'
-
-    resource blobTriggerContainer 'containers' = {
-      name: 'blobtriggercontainer'
-    }
-
-    resource eventGridTriggerContainer 'containers' = {
-      name: 'eventgridtriggercontainer'
-    }
+module storageAccount 'modules/storageAccount.bicep' = {
+  name: 'functionstorage'
+  params: {
+    location: location
+    storageAccountName: storageAccountName 
+    storageSku: storageSku
   }
 }
 
-resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: appInsightsName
-  location: location 
-  kind: 'web'
-  properties: {
-    Application_Type: 'web'
-    publicNetworkAccessForIngestion: 'Enabled'
-    publicNetworkAccessForQuery: 'Enabled'
+module appInsights 'modules/appInsights.bicep' = {
+  name: 'appinsights'
+  params: {
+    appInsightsName: appInsightsName
+    location: location
   }
 }
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
-  name: appServicePlanName
-  location: location
-  kind: 'functionapp'
-  sku: {
-    name: 'Y1'
-  }
-  properties: {
-    
-  } 
-}
-
-resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' = {
-  name: cosmosDbAccountName
-  location: location
-  properties: {
-    databaseAccountOfferType: 'Standard'
-    locations: [
-      {
-        locationName: location
-        failoverPriority: 0
-        isZoneRedundant: false
-      }
-    ]
-    consistencyPolicy: {
-      defaultConsistencyLevel: 'Session'
-    }
-  }
-  identity: {
-    type: 'SystemAssigned'
+module appServicePlan 'modules/appServicePlan.bicep' = {
+  name: 'appserviceplan'
+  params: {
+    appServicePlanName: appServicePlanName
+    location: location
   }
 }
 
-resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2021-10-15' = {
-  name: cosmosDbName
-  parent: cosmosAccount
-  properties: {
-    resource: {
-      id: cosmosDbName
-    }
+module cosmosDb 'modules/cosmosDB.bicep' = {
+  name: 'cosmosdb'
+  params: {
+    cosmosContainerName: cosmosContainerName
+    cosmosDbAccountName: cosmosDbAccountName
+    cosmosDbName: cosmosDbName
+    cosmosThroughput: cosmosThroughput
+    location: location
   }
 }
 
-resource cosmosContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
-  name: cosmosContainerName
-  parent: cosmosDb
-  properties: {
-    options: {
-      throughput: cosmosThroughput
-    }
-    resource: {
-      id: cosmosContainerName
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-      indexingPolicy: {
-        indexingMode: 'consistent'
-        includedPaths: [
-          {
-            path: '/*'
-          }
-        ]
-      }
-    }
+module eventHub 'modules/eventHubs.bicep' = {
+  name: 'eventhub'
+  params: {
+    eventhubName: eventhubName 
+    location: location
   }
 }
 
-resource eventHubNamespace 'Microsoft.EventHub/namespaces@2021-11-01' = {
-  name: eventhubName
-  location: location
-  sku: {
-    name: 'Basic'
-    tier: 'Basic'
-  }
-  identity: {
-    type: 'SystemAssigned'
+module keyVault 'modules/keyVault.bicep' = {
+  name: 'keyvault'
+  params: {
+    cosmosDbAccountName: cosmosDbAccountName 
+    functionAppName: functionAppName
+    keyVaultName: keyVaultName
+    location: location
   }
 }
 
-resource eventHub 'Microsoft.EventHub/namespaces/eventhubs@2021-11-01' = {
-  name: 'readings'
-  parent: eventHubNamespace
-  properties: {
-    messageRetentionInDays: 1
+module functionApp 'modules/functionApp.bicep' = {
+  name: 'functionapp'
+  params: {
+    appInsightsInstrumentationKey: appInsights.outputs.appInsightsInstrumentationKey
+    appServicePlanId: appServicePlan.outputs.appServicePlanId
+    containerName: cosmosDb.outputs.cosmosContainerName
+    cosmosDbEndpoint: cosmosDb.outputs.cosmosDbEndpoint
+    databaseName: cosmosDb.outputs.cosmosDbName
+    eventhubName: eventHub.outputs.eventHubName
+    eventhubNamespace: eventHub.outputs.eventHubNamespace
+    functionAppName: functionAppName
+    functionAppStorageAccount: storageAccount.name
+    location: location
   }
 }
 
-resource eventHubAuthPolicy 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules@2021-11-01' = {
-  name: 'ListenSend'
-  parent: eventHub
-  properties: {
-    rights: [
-      'Listen'
-      'Send'
-    ]
-  }
-}
-
-resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
-  name: keyVaultName
-  location: location
-  properties: {
-    sku: {
-      family: 'A'
-      name: 'standard'
-    }
-    tenantId: subscription().tenantId
-    accessPolicies: [
-      {
-        objectId: functionApp.identity.principalId
-        tenantId: functionApp.identity.tenantId
-        permissions: {
-          secrets: [
-            'list'
-            'get'
-          ]
-        }
-      }
-    ]
-  }
-}
-
-resource cosmosDbConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
-  name: 'cosmosdbconnectionstring'
-  parent: keyVault
-  properties: {
-    value: cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
-  }
-}
-
-resource cosmosDbEndpointSecret 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
-  name: 'cosmosdbendpoint'
-  parent: keyVault
-  properties: {
-    value: cosmosAccount.properties.documentEndpoint
-  }
-}
-
-resource cosmosDbPrimaryKeySecret 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
-  name: 'cosmosdbprimarykey'
-  parent: keyVault
-  properties: {
-    value: cosmosAccount.listKeys().primaryMasterKey
-  }
-}
-
-resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
-  name: functionAppName
-  location: location
-  kind: 'functionapp'
-  properties: {
-    serverFarmId: appServicePlan.id
-    siteConfig: {
-      appSettings: [
-        {
-          name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value}'
-        }
-        {
-          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value}'
-        }
-        {
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: appInsights.properties.InstrumentationKey
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: 'InstrumentationKey=${appInsights.properties.InstrumentationKey}'
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: functionRuntime
-        }
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~4'
-        }
-        {
-          name: 'CosmosDbConnectionString'
-          value: cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
-        }
-        {
-          name: 'DatabaseName'
-          value: cosmosDb.name
-        }
-        {
-          name: 'ContainerName'
-          value: cosmosContainer.name
-        }
-        {
-          name: 'CosmosDbEndpoint'
-          value: cosmosAccount.properties.documentEndpoint
-        }
-        {
-          name: 'EventHubConnectionString'
-          value: eventHubAuthPolicy.listKeys().primaryConnectionString
-        }
-        {
-          name: 'BlobTriggerStorageConnection'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${blobStorgage.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(blobStorgage.id, blobStorgage.apiVersion).keys[0].value}'
-        }
-      ]
-    }
-    httpsOnly: true
-  } 
-  identity: {
-    type: 'SystemAssigned'
-  }
-}
-
-resource functionCosmosDbContributorRole 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
-  name: guid(cosmosAccount.id, functionApp.id, cosmosDbContributorRole)
-  scope: cosmosAccount
-  properties: {
-    principalId: functionApp.identity.principalId
-    roleDefinitionId: cosmosDbContributorRole
-    principalType: 'ServicePrincipal'
+module sqlRoles 'modules/sqlRoleDefinition.bicep' = {
+  name: 'sqlroles'
+  params: {
+    cosmosDbAccountName: cosmosDb.outputs.cosmosDbName
+    cosmosDbId: cosmosDb.outputs.cosmosAccountId
+    dataActions: dataActions
+    functionAppPrincipalId: functionApp.outputs.functionAppPrincipalId
+    roleDefinitionName: roleDefinitionName
   }
 }
