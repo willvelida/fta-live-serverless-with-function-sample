@@ -19,7 +19,7 @@ var cosmosThroughput = 400
 var functionAppName = '${applicationName}-fa'
 var functionRuntime = 'dotnet'
 var keyVaultName = 'kv${applicationName}'
-var cosmosDbReaderRole = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'fbdf93bf-df7d-467e-a4d2-9458aa1360c8')
+var cosmosDbReaderRole = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '00000000-0000-0000-0000-000000000002')
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: storageAccountName
