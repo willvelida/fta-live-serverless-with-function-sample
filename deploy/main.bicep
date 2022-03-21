@@ -194,6 +194,30 @@ resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
   }
 }
 
+resource cosmosDbConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
+  name: 'cosmosdbconnectionstring'
+  parent: keyVault
+  properties: {
+    value: cosmosAccount.listConnectionStrings().connectionStrings[0].connectionString
+  }
+}
+
+resource cosmosDbEndpointSecret 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
+  name: 'cosmosdbendpoint'
+  parent: keyVault
+  properties: {
+    value: cosmosAccount.properties.documentEndpoint
+  }
+}
+
+resource cosmosDbPrimaryKeySecret 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
+  name: 'cosmosdbprimarykey'
+  parent: keyVault
+  properties: {
+    value: cosmosAccount.listKeys().primaryMasterKey
+  }
+}
+
 resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   name: functionAppName
   location: location
