@@ -34,7 +34,7 @@ namespace WeatherStation
                     MaxRetryAttemptsOnRateLimitedRequests = 3,
                     MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(60)
                 };
-                return new CosmosClient(configuration["CosmosEndpoint"], new DefaultAzureCredential(), cosmosClientOptions);
+                return new CosmosClient(configuration["CosmosDbEndpoint"], new DefaultAzureCredential(), cosmosClientOptions);
             });
 
             builder.Services.AddTransient<IWeatherRepository, WeatherRepository>();
