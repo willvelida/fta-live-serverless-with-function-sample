@@ -101,7 +101,7 @@ module functionApp 'modules/functionApp.bicep' = {
 module sqlRoles 'modules/sqlRoleDefinition.bicep' = {
   name: 'sqlroles'
   params: {
-    cosmosDbAccountName: cosmosDb.outputs.cosmosDbName
+    cosmosDbAccountName: cosmosDbAccountName
     cosmosDbId: cosmosDb.outputs.cosmosAccountId
     dataActions: dataActions
     functionAppPrincipalId: functionApp.outputs.functionAppPrincipalId
