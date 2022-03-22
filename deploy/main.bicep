@@ -28,7 +28,7 @@ var functionAppName = '${applicationName}-fa'
 var keyVaultName = 'kv${applicationName}'
 
 module storageAccount 'modules/storageAccount.bicep' = {
-  name: 'functionstorage'
+  name: storageAccountName
   params: {
     location: location
     storageAccountName: storageAccountName 
@@ -37,7 +37,7 @@ module storageAccount 'modules/storageAccount.bicep' = {
 }
 
 module appInsights 'modules/appInsights.bicep' = {
-  name: 'appinsights'
+  name: appInsightsName
   params: {
     appInsightsName: appInsightsName
     location: location
@@ -45,7 +45,7 @@ module appInsights 'modules/appInsights.bicep' = {
 }
 
 module appServicePlan 'modules/appServicePlan.bicep' = {
-  name: 'appserviceplan'
+  name: appServicePlanName
   params: {
     appServicePlanName: appServicePlanName
     location: location
@@ -53,7 +53,7 @@ module appServicePlan 'modules/appServicePlan.bicep' = {
 }
 
 module cosmosDb 'modules/cosmosDB.bicep' = {
-  name: 'cosmosdb'
+  name: cosmosDbAccountName
   params: {
     cosmosContainerName: cosmosContainerName
     cosmosDbAccountName: cosmosDbAccountName
@@ -64,7 +64,7 @@ module cosmosDb 'modules/cosmosDB.bicep' = {
 }
 
 module eventHub 'modules/eventHubs.bicep' = {
-  name: 'eventhub'
+  name: eventhubName
   params: {
     eventhubName: eventhubName 
     location: location
@@ -72,7 +72,7 @@ module eventHub 'modules/eventHubs.bicep' = {
 }
 
 module keyVault 'modules/keyVault.bicep' = {
-  name: 'keyvault'
+  name: keyVaultName
   params: {
     cosmosDbAccountName: cosmosDbAccountName 
     functionAppName: functionAppName
@@ -82,7 +82,7 @@ module keyVault 'modules/keyVault.bicep' = {
 }
 
 module functionApp 'modules/functionApp.bicep' = {
-  name: 'functionapp'
+  name: functionAppName
   params: {
     appInsightsInstrumentationKey: appInsights.outputs.appInsightsInstrumentationKey
     appServicePlanId: appServicePlan.outputs.appServicePlanId
