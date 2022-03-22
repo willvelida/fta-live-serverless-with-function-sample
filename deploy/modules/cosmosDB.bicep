@@ -67,6 +67,6 @@ resource cosmosContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/con
 
 
 output cosmosAccountId string = cosmosAccount.id
-output cosmosContainerName string = cosmosContainer.name
+output cosmosContainerName string = cosmosContainer.properties.resource.id
 output cosmosDbEndpoint string = cosmosAccount.properties.documentEndpoint
-output cosmosDbName string = cosmosDb.name
+output cosmosDbName string = cosmosDb.properties.resource.id
