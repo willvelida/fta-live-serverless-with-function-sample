@@ -78,6 +78,8 @@ module keyVault 'modules/keyVault.bicep' = {
     functionAppName: functionAppName
     keyVaultName: keyVaultName
     location: location
+    eventHubNamespaceName: eventhubName
+    eventhubName: 'readings'
   }
 }
 
