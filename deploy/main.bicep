@@ -86,6 +86,7 @@ module functionApp 'modules/functionApp.bicep' = {
   params: {
     appInsightsInstrumentationKey: appInsights.outputs.appInsightsInstrumentationKey
     appServicePlanId: appServicePlan.outputs.appServicePlanId
+    cosmosDbAccountName: cosmosDb.name
     containerName: cosmosDb.outputs.cosmosContainerName
     cosmosDbEndpoint: cosmosDb.outputs.cosmosDbEndpoint
     databaseName: cosmosDb.outputs.cosmosDbName

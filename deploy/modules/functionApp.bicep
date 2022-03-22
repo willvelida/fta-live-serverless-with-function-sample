@@ -8,6 +8,7 @@ param containerName string
 param cosmosDbEndpoint string
 param eventhubNamespace string
 param eventhubName string
+param cosmosDbAccountName string
 
 var functionRuntime = 'dotnet'
 
@@ -17,6 +18,10 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' existing 
 
 resource eventHubNamespace 'Microsoft.EventHub/namespaces@2021-11-01' existing = {
   name: eventhubNamespace
+}
+
+resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts@2021-11-15-preview' existing = {
+  name: cosmosDbAccountName
 }
 
 resource eventHubAuthPolicy 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules@2021-11-01' existing = {
@@ -81,6 +86,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   dependsOn: [
     storageAccount
     eventHubNamespace
+    cosmosDb
   ]
 }
 
