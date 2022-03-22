@@ -15,6 +15,10 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' existing 
   name: functionAppStorageAccount
 }
 
+resource eventHubNamespace 'Microsoft.EventHub/namespaces@2021-11-01' existing = {
+  name: eventhubNamespace
+}
+
 resource eventHubAuthPolicy 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules@2021-11-01' existing = {
   name: '${eventhubNamespace}/${eventhubName}/ListenSend'
 }
@@ -74,6 +78,10 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   identity: {
     type: 'SystemAssigned'
   }
+  dependsOn: [
+    storageAccount
+    eventHubNamespace
+  ]
 }
 
 output functionAppPrincipalId string = functionApp.identity.principalId

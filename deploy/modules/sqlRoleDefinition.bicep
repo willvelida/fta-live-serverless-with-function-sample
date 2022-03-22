@@ -7,13 +7,17 @@ param roleDefinitionName string
 var roleDefinitionId = guid('sql-role-definition-', functionAppPrincipalId, cosmosDbId)
 var roleAssignmentId = guid(roleDefinitionId, functionAppPrincipalId, cosmosDbId)
 
+resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2021-11-15-preview' existing = {
+  name: cosmosDbAccountName
+}
+
 resource sqlRoleDefinition 'Microsoft.DocumentDB/databaseAccounts/sqlRoleDefinitions@2021-11-15-preview' = {
   name: '${cosmosDbAccountName}/${roleDefinitionId}'
   properties: {
     roleName: roleDefinitionName
     type: 'CustomRole'
     assignableScopes: [
-      cosmosDbId
+      cosmosDbAccount.id
     ]
     permissions: [
       {
@@ -21,6 +25,9 @@ resource sqlRoleDefinition 'Microsoft.DocumentDB/databaseAccounts/sqlRoleDefinit
       }
     ]
   }
+  dependsOn: [
+    cosmosDbAccount
+  ]
 }
 
 resource sqlRoleAssignment 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2021-11-15-preview' = {
@@ -28,6 +35,6 @@ resource sqlRoleAssignment 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignm
   properties: {
     roleDefinitionId: sqlRoleDefinition.id
     principalId: functionAppPrincipalId
-    scope: cosmosDbId
+    scope: cosmosDbAccount.id
   }
 }
