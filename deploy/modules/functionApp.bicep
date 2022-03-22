@@ -22,6 +22,14 @@ resource eventHubNamespace 'Microsoft.EventHub/namespaces@2021-11-01' existing =
 
 resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts@2021-11-15-preview' existing = {
   name: cosmosDbAccountName
+
+  resource db 'sqlDatabases' existing = {
+    name: databaseName
+
+    resource container 'containers' existing = {
+      name: containerName
+    }
+  }
 }
 
 resource eventHubAuthPolicy 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules@2021-11-01' existing = {
@@ -87,6 +95,8 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
     storageAccount
     eventHubNamespace
     cosmosDb
+    cosmosDb::db
+    cosmosDb::db::container
   ]
 }
 
