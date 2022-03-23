@@ -135,7 +135,6 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
     type: 'SystemAssigned'
   }
   dependsOn: [
-    eventHub
     cosmosDb
   ]
 }
