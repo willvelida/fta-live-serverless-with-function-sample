@@ -148,4 +148,7 @@ module sqlRoles 'modules/sqlRoleDefinition.bicep' = {
     cosmosDbAccountName: cosmosDbAccountName
     functionAppPrincipalId: functionApp.identity.principalId
   }
+  dependsOn: [
+    cosmosDb
+  ]
 }
