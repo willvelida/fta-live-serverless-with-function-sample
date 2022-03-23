@@ -23,7 +23,7 @@ namespace WeatherStation.Functions
 
 
         [FunctionName("ProcessReadings")]
-        public async Task Run([EventHubTrigger("readings", Connection = "EventHubConnectionString")] EventData[] readingEvents)
+        public async Task Run([EventHubTrigger("readings", Connection = "EventHubConnection")] EventData[] readingEvents)
         {
             _logger.LogInformation("Reading events of readings event hub.");
 
