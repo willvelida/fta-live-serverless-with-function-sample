@@ -52,6 +52,9 @@ module eventHub 'modules/eventHubs.bicep' = {
     location: location
     functionAppName: functionAppName
   }
+  dependsOn: [
+    functionApp
+  ]
 }
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
@@ -125,7 +128,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'EventHubConnection__fullyQualifiedNamespace'
-          value: '${eventHub.outputs.eventHubNamespace}.servicebus.windows.net'
+          value: '${eventhubName}.servicebus.windows.net'
         }
       ]
     }
