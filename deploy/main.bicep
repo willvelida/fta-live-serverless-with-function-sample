@@ -78,8 +78,6 @@ module keyVault 'modules/keyVault.bicep' = {
     functionAppName: functionAppName
     keyVaultName: keyVaultName
     location: location
-    eventHubNamespaceName: eventhubName
-    eventhubName: 'readings'
   }
 }
 
@@ -104,9 +102,6 @@ module sqlRoles 'modules/sqlRoleDefinition.bicep' = {
   name: 'sqlroles'
   params: {
     cosmosDbAccountName: cosmosDbAccountName
-    cosmosDbId: cosmosDb.outputs.cosmosAccountId
-    dataActions: dataActions
     functionAppPrincipalId: functionApp.outputs.functionAppPrincipalId
-    roleDefinitionName: roleDefinitionName
   }
 }

@@ -1,11 +1,13 @@
 param cosmosDbAccountName string
-param dataActions array
-param cosmosDbId string
 param functionAppPrincipalId string
-param roleDefinitionName string
 
-var roleDefinitionId = guid('sql-role-definition-', functionAppPrincipalId, cosmosDbId)
-var roleAssignmentId = guid(roleDefinitionId, functionAppPrincipalId, cosmosDbId)
+var roleDefinitionId = guid('sql-role-definition-', functionAppPrincipalId, cosmosDbAccount.id)
+var roleAssignmentId = guid(roleDefinitionId, functionAppPrincipalId, cosmosDbAccount.id)
+var roleDefinitionName = 'Function Read Write Role'
+var dataActions = [
+  'Microsoft.DocumentDB/databaseAccounts/readMetadata'
+  'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/*'
+] 
 
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2021-11-15-preview' existing = {
   name: cosmosDbAccountName
