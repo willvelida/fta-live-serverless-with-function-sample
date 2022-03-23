@@ -7,7 +7,6 @@ param databaseName string
 param containerName string
 param cosmosDbEndpoint string
 param eventhubNamespace string
-param eventhubName string
 param cosmosDbAccountName string
 
 var functionRuntime = 'dotnet'
@@ -30,10 +29,6 @@ resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts@2021-11-15-preview' exi
       name: containerName
     }
   }
-}
-
-resource eventHubAuthPolicy 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules@2021-11-01' existing = {
-  name: '${eventhubNamespace}/${eventhubName}/ListenSend'
 }
 
 resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
@@ -81,8 +76,8 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
           value: cosmosDbEndpoint
         }
         {
-          name: 'EventHubConnectionString'
-          value: eventHubAuthPolicy.listKeys().primaryConnectionString
+          name: 'EventHubConnection_fullyQualifiedNamespace'
+          value: eventHubNamespace.properties.serviceBusEndpoint
         }
       ]
     }

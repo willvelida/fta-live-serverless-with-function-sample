@@ -82,7 +82,6 @@ module functionApp 'modules/functionApp.bicep' = {
     containerName: cosmosDb.outputs.cosmosContainerName
     cosmosDbEndpoint: cosmosDb.outputs.cosmosDbEndpoint
     databaseName: cosmosDb.outputs.cosmosDbName
-    eventhubName: eventHub.outputs.eventHubName
     eventhubNamespace: eventHub.outputs.eventHubNamespace
     functionAppName: functionAppName
     functionAppStorageAccount: storageAccount.name

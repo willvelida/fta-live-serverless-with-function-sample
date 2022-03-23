@@ -15,7 +15,7 @@ namespace WeatherStation.Functions
         [FunctionName("GenerateReadings")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "readings/{numberOfReadings}")] HttpRequest req,
-            [EventHub("readings", Connection = "EventHubConnectionString")] IAsyncCollector<WeatherReading> outputEvents,
+            [EventHub("readings", Connection = "EventHubConnection")] IAsyncCollector<WeatherReading> outputEvents,
             ILogger log,
             int numberOfReadings)
         {
