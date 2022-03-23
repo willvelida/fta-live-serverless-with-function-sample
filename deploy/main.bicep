@@ -16,16 +16,7 @@ var cosmosDbName = 'ReadingsDB'
 var cosmosContainerName = 'Readings'
 var cosmosThroughput = 400
 var functionAppName = '${applicationName}-fa'
-var keyVaultName = 'kv${applicationName}'
-
-module storageAccount 'modules/storageAccount.bicep' = {
-  name: storageAccountName
-  params: {
-    location: location
-    storageAccountName: storageAccountName 
-    storageSku: storageSku
-  }
-}
+var functionRuntime = 'dotnet'
 
 module appInsights 'modules/appInsights.bicep' = {
   name: appInsightsName
@@ -63,36 +54,96 @@ module eventHub 'modules/eventHubs.bicep' = {
   }
 }
 
-module keyVault 'modules/keyVault.bicep' = {
-  name: keyVaultName
-  params: {
-    cosmosDbAccountName: cosmosDbAccountName 
-    functionAppName: functionAppName
-    keyVaultName: keyVaultName
-    location: location
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
+  name: storageAccountName
+  location: location
+  sku: {
+    name: storageSku
+  }
+  kind: 'StorageV2'
+  properties: {
+    supportsHttpsTrafficOnly: true
+    accessTier: 'Hot'
+  }
+  
+  resource blobServices 'blobServices' = {
+    name: 'default'
+
+    resource blobTriggerContainer 'containers' = {
+      name: 'blobtriggercontainer'
+    }
+
+    resource eventGridTriggerContainer 'containers' = {
+      name: 'eventgridtriggercontainer'
+    }
   }
 }
 
-module functionApp 'modules/functionApp.bicep' = {
+resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   name: functionAppName
-  params: {
-    appInsightsInstrumentationKey: appInsights.outputs.appInsightsInstrumentationKey
-    appServicePlanId: appServicePlan.outputs.appServicePlanId
-    cosmosDbAccountName: cosmosDb.name
-    containerName: cosmosDb.outputs.cosmosContainerName
-    cosmosDbEndpoint: cosmosDb.outputs.cosmosDbEndpoint
-    databaseName: cosmosDb.outputs.cosmosDbName
-    eventhubNamespace: eventHub.outputs.eventHubNamespace
-    functionAppName: functionAppName
-    functionAppStorageAccount: storageAccount.name
-    location: location
+  location: location
+  kind: 'functionapp'
+  properties: {
+    serverFarmId: appServicePlan.outputs.appServicePlanId
+    siteConfig: {
+      appSettings: [
+        {
+          name: 'AzureWebJobsStorage'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value}'
+        }
+        {
+          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value}'
+        }
+        {
+          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+          value: appInsights.outputs.appInsightsInstrumentationKey
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: 'InstrumentationKey=${appInsights.outputs.appInsightsInstrumentationKey}'
+        }
+        {
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: functionRuntime
+        }
+        {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~4'
+        }
+        {
+          name: 'DatabaseName'
+          value: cosmosDb.outputs.cosmosDbName
+        }
+        {
+          name: 'ContainerName'
+          value: cosmosDb.outputs.cosmosContainerName
+        }
+        {
+          name: 'CosmosDbEndpoint'
+          value: cosmosDb.outputs.cosmosDbEndpoint
+        }
+        {
+          name: 'EventHubConnection__fullyQualifiedNamespace'
+          value: '${eventHub.outputs.eventHubNamespace}.servicebus.windows.net'
+        }
+      ]
+    }
+    httpsOnly: true
+  } 
+  identity: {
+    type: 'SystemAssigned'
   }
+  dependsOn: [
+    eventHub
+    cosmosDb
+  ]
 }
 
 module sqlRoles 'modules/sqlRoleDefinition.bicep' = {
   name: 'sqlroles'
   params: {
     cosmosDbAccountName: cosmosDbAccountName
-    functionAppPrincipalId: functionApp.outputs.functionAppPrincipalId
+    functionAppPrincipalId: functionApp.identity.principalId
   }
 }
