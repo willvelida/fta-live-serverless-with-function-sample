@@ -59,6 +59,7 @@ module eventHub 'modules/eventHubs.bicep' = {
   params: {
     eventhubName: eventhubName 
     location: location
+    functionAppName: functionAppName
   }
 }
 
