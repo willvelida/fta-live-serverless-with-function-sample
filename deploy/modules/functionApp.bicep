@@ -93,7 +93,6 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   }
   dependsOn: [
     storageAccount
-    eventHubNamespace
     cosmosDb
     cosmosDb::db
     cosmosDb::db::container

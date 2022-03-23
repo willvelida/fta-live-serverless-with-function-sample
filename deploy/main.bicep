@@ -7,15 +7,6 @@ param applicationName string = uniqueString(resourceGroup().id)
 @description('The SKU for the storage account')
 param storageSku string = 'Standard_LRS'
 
-@description('Friendly name for the SQL Role Definition')
-param roleDefinitionName string = 'Function Read Write Role'
-
-@description('Data actions required by the Role defintiion')
-param dataActions array = [
-  'Microsoft.DocumentDB/databaseAccounts/readMetadata'
-  'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/*'
-]
-
 var storageAccountName = 'fnstor${replace(applicationName, '-', '')}'
 var appInsightsName = '${applicationName}-ai'
 var appServicePlanName = '${applicationName}-asp'
