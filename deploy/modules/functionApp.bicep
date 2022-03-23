@@ -76,8 +76,8 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
           value: cosmosDbEndpoint
         }
         {
-          name: 'EventHubConnection'
-          value: eventHubNamespace.properties.serviceBusEndpoint
+          name: 'EventHubConnection__fullyQualifiedNamespace'
+          value: '${eventHubNamespace.name}.servicebus.windows.net'
         }
       ]
     }
