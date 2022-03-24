@@ -11,7 +11,7 @@ var storageAccountName = 'fnstor${replace(applicationName, '-', '')}'
 var appInsightsName = '${applicationName}-ai'
 var appServicePlanName = '${applicationName}-asp'
 var eventhubName = 'eh${applicationName}'
-var cosmosDbAccountName = '${applicationName}cosmosdb'
+var cosmosDbAccountName = '${applicationName}db'
 var cosmosDbName = 'ReadingsDB'
 var cosmosContainerName = 'Readings'
 var cosmosThroughput = 400
@@ -34,14 +34,63 @@ module appServicePlan 'modules/appServicePlan.bicep' = {
   }
 }
 
-module cosmosDb 'modules/cosmosDB.bicep' = {
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' = {
   name: cosmosDbAccountName
-  params: {
-    cosmosContainerName: cosmosContainerName
-    cosmosDbAccountName: cosmosDbAccountName
-    cosmosDbName: cosmosDbName
-    cosmosThroughput: cosmosThroughput
-    location: location
+  location: location
+  properties: {
+    databaseAccountOfferType: 'Standard'
+    locations: [
+      {
+        locationName: location
+        failoverPriority: 0
+        isZoneRedundant: false
+      }
+    ]
+    consistencyPolicy: {
+      defaultConsistencyLevel: 'Session'
+    }
+  }
+  identity: {
+    type: 'SystemAssigned'
+  }
+}
+
+
+
+resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2021-10-15' = {
+  name: cosmosDbName
+  parent: cosmosAccount
+  properties: {
+    resource: {
+      id: cosmosDbName
+    }
+  }
+}
+
+resource cosmosContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
+  name: cosmosContainerName
+  parent: cosmosDb
+  properties: {
+    options: {
+      throughput: cosmosThroughput
+    }
+    resource: {
+      id: cosmosContainerName
+      partitionKey: {
+        paths: [
+          '/id'
+        ]
+        kind: 'Hash'
+      }
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        includedPaths: [
+          {
+            path: '/*'
+          }
+        ]
+      }
+    }
   }
 }
 
@@ -50,7 +99,7 @@ module eventHub 'modules/eventHubs.bicep' = {
   params: {
     eventhubName: eventhubName 
     location: location
-    functionAppName: functionAppName
+    functionAppName: functionApp.name
   }
 }
 
@@ -113,15 +162,15 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'DatabaseName'
-          value: cosmosDb.outputs.cosmosDbName
+          value: cosmosDb.name
         }
         {
           name: 'ContainerName'
-          value: cosmosDb.outputs.cosmosContainerName
+          value: cosmosContainer.name
         }
         {
           name: 'CosmosDbEndpoint'
-          value: cosmosDb.outputs.cosmosDbEndpoint
+          value: cosmosAccount.properties.documentEndpoint
         }
         {
           name: 'EventHubConnection__fullyQualifiedNamespace'
