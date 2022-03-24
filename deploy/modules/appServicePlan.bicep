@@ -7,12 +7,13 @@ param location string
 resource appServicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   name: appServicePlanName
   location: location
-  kind: 'functionapp'
+  kind: 'elastic'
   sku: {
-    name: 'Y1'
+    name: 'EP1'
+    tier: 'ElasticPremium'
   }
   properties: {
-    
+    maximumElasticWorkerCount: 20
   } 
 }
 
