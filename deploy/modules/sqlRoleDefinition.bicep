@@ -1,4 +1,7 @@
+@description('The name of the Cosmos DB account that we will use for SQL Role Assignments')
 param cosmosDbAccountName string
+
+@description('The Principal Id of the Function App that we will grant the role assignment to.')
 param functionAppPrincipalId string
 
 var roleDefinitionId = guid('sql-role-definition-', functionAppPrincipalId, cosmosDbAccount.id)

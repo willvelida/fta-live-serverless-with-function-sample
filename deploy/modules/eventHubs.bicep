@@ -1,5 +1,10 @@
-param eventhubName string
+@description('The name of the Event Hub Namespace.')
+param eventhubNamespaceName string
+
+@description('The location that the Event Hub namespace will be deployed to.')
 param location string
+
+@description('The name of the Function app that we will assign Data Receiver and Data Sender roles to.')
 param functionAppName string
 
 var eventHubsDataReceiverRoleId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '2b629674-e913-4c01-ae53-ef4638d8f975')
@@ -10,7 +15,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' existing = {
 }
 
 resource eventHubNamespace 'Microsoft.EventHub/namespaces@2021-11-01' = {
-  name: eventhubName
+  name: eventhubNamespaceName
   location: location
   sku: {
     name: 'Basic'

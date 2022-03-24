@@ -18,91 +18,6 @@ var cosmosThroughput = 400
 var functionAppName = '${applicationName}-fa'
 var functionRuntime = 'dotnet'
 
-module appInsights 'modules/appInsights.bicep' = {
-  name: appInsightsName
-  params: {
-    appInsightsName: appInsightsName
-    location: location
-  }
-}
-
-module appServicePlan 'modules/appServicePlan.bicep' = {
-  name: appServicePlanName
-  params: {
-    appServicePlanName: appServicePlanName
-    location: location
-  }
-}
-
-resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' = {
-  name: cosmosDbAccountName
-  location: location
-  properties: {
-    databaseAccountOfferType: 'Standard'
-    locations: [
-      {
-        locationName: location
-        failoverPriority: 0
-        isZoneRedundant: false
-      }
-    ]
-    consistencyPolicy: {
-      defaultConsistencyLevel: 'Session'
-    }
-  }
-  identity: {
-    type: 'SystemAssigned'
-  }
-}
-
-
-
-resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2021-10-15' = {
-  name: cosmosDbName
-  parent: cosmosAccount
-  properties: {
-    resource: {
-      id: cosmosDbName
-    }
-  }
-}
-
-resource cosmosContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
-  name: cosmosContainerName
-  parent: cosmosDb
-  properties: {
-    options: {
-      throughput: cosmosThroughput
-    }
-    resource: {
-      id: cosmosContainerName
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-      indexingPolicy: {
-        indexingMode: 'consistent'
-        includedPaths: [
-          {
-            path: '/*'
-          }
-        ]
-      }
-    }
-  }
-}
-
-module eventHub 'modules/eventHubs.bicep' = {
-  name: eventhubName
-  params: {
-    eventhubName: eventhubName 
-    location: location
-    functionAppName: functionApp.name
-  }
-}
-
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: storageAccountName
   location: location
@@ -182,6 +97,93 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   } 
   identity: {
     type: 'SystemAssigned'
+  }
+}
+
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' = {
+  name: cosmosDbAccountName
+  location: location
+  properties: {
+    databaseAccountOfferType: 'Standard'
+    locations: [
+      {
+        locationName: location
+        failoverPriority: 0
+        isZoneRedundant: false
+      }
+    ]
+    consistencyPolicy: {
+      defaultConsistencyLevel: 'Session'
+    }
+  }
+  identity: {
+    type: 'SystemAssigned'
+  }
+}
+
+
+
+resource cosmosDb 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2021-10-15' = {
+  name: cosmosDbName
+  parent: cosmosAccount
+  properties: {
+    resource: {
+      id: cosmosDbName
+    }
+  }
+}
+
+resource cosmosContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-10-15' = {
+  name: cosmosContainerName
+  parent: cosmosDb
+  properties: {
+    options: {
+      throughput: cosmosThroughput
+    }
+    resource: {
+      id: cosmosContainerName
+      partitionKey: {
+        paths: [
+          '/id'
+        ]
+        kind: 'Hash'
+      }
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        includedPaths: [
+          {
+            path: '/*'
+          }
+        ]
+      }
+    }
+  }
+}
+
+module appInsights 'modules/appInsights.bicep' = {
+  name: appInsightsName
+  params: {
+    appInsightsName: appInsightsName
+    location: location
+  }
+}
+
+module appServicePlan 'modules/appServicePlan.bicep' = {
+  name: appServicePlanName
+  params: {
+    appServicePlanName: appServicePlanName
+    location: location
+  }
+}
+
+
+
+module eventHub 'modules/eventHubs.bicep' = {
+  name: eventhubName
+  params: {
+    eventhubNamespaceName: eventhubName 
+    location: location
+    functionAppName: functionApp.name
   }
 }
 
