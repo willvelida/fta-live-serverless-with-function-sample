@@ -52,9 +52,6 @@ module eventHub 'modules/eventHubs.bicep' = {
     location: location
     functionAppName: functionAppName
   }
-  dependsOn: [
-    functionApp
-  ]
 }
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
@@ -137,9 +134,6 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  dependsOn: [
-    cosmosDb
-  ]
 }
 
 module sqlRoles 'modules/sqlRoleDefinition.bicep' = {
