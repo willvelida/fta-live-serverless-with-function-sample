@@ -91,6 +91,10 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
           name: 'EventHubConnection__fullyQualifiedNamespace'
           value: '${eventhubName}.servicebus.windows.net'
         }
+        {
+          name: 'SCALE_CONTROLLER_LOGGING_ENABLED'
+          value: 'AppInsights:Verbose'
+        }
       ]
     }
     httpsOnly: true
