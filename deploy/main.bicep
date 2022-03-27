@@ -17,6 +17,8 @@ var cosmosContainerName = 'Readings'
 var cosmosThroughput = 400
 var functionAppName = '${applicationName}-fa'
 var functionRuntime = 'dotnet'
+var blogTriggerContainerName = 'blobtriggercontainer'
+var eventgridTriggerContainerName = 'eventgridtriggercontainer'
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
   name: storageAccountName
@@ -34,11 +36,11 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-08-01' = {
     name: 'default'
 
     resource blobTriggerContainer 'containers' = {
-      name: 'blobtriggercontainer'
+      name: blogTriggerContainerName
     }
 
     resource eventGridTriggerContainer 'containers' = {
-      name: 'eventgridtriggercontainer'
+      name: eventgridTriggerContainerName
     }
   }
 }
